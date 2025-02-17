@@ -62,14 +62,14 @@ const addBookNode = (book: { id: string; title: string; author: string; year: nu
   const y = centerY + mainNode.height + 20;
 
   // X position: Place nodes in a row, centered relative to the main node
-  const x = centerX  + previousNodesWidth;
+  const x = centerX + previousNodesWidth;
 
   console.log(`Placing New Node: ${book.title}, X: ${x}, Y: ${y}`);
 
   const newNode = {
     id: book.id,
     position: { x, y },
-    data: { label: `${book.title} (${book.year})`, author: book.author, year: book.year },
+    data: { label: `${book.title} - ${book.author} (${book.year})`, author: book.author, year: book.year },
   };
 
   const newEdge = {
@@ -84,27 +84,76 @@ const addBookNode = (book: { id: string; title: string; author: string; year: nu
   nodeCount.value++; // Increment for the next node
 };
 
+// Handle when an edge is created
+const onEdgeConnect = (connection) => {
+  const newEdge = {
+    id: `e-${connection.source}-${connection.target}`,
+    source: connection.source,
+    target: connection.target,
+  };
 
+  edges.value.push(newEdge);
+  console.log(`🔗 Edge Created: ${newEdge.id}`);
+};
 
+// Handle when an edge is updated (moved)
+const onEdgeUpdate = ({ edge, connection }) => {
+  console.log(`✏️ Edge Updated from ${edge.source} → ${edge.target} to ${connection.source} → ${connection.target}`);
+
+  edges.value = edges.value.map(e =>
+      e.id === edge.id ? { ...e, source: connection.source, target: connection.target } : e
+  );
+};
+
+// Handle when an edge is clicked (manual deletion)
+const onEdgeClick = (event, edge) => {
+  console.log(`🖱️ Edge Clicked:`, edge);
+
+  if (!edge || !edge.id) {
+    console.error("⚠️ Edge ID is missing! The event did not provide the correct edge data.");
+    return;
+  }
+
+  edges.value = edges.value.filter(e => e.id !== edge.id);
+  console.log(`❌ Edge Deleted Successfully: ${edge.id}`);
+
+  // Check if any node is now disconnected
+  const connectedNodes = new Set(edges.value.flatMap(e => [e.source, e.target]));
+  nodes.value = nodes.value.filter(node => node.id === mainNodeId || connectedNodes.has(node.id));
+
+  console.log("🔄 Updated Nodes List:", nodes.value);
+};
+
+// Handle when a node is clicked
+const onNodeClick = (event, node) => {
+  console.log(`🖱️ Node Clicked: ${node.id}`);
+};
 
 </script>
 
 <template>
   <div class="container">
-    <VueFlow :nodes="nodes" :edges="edges">
+    <VueFlow
+        v-model:nodes="nodes"
+        v-model:edges="edges"
+        :defaultEdgeOptions="{ deletable: true, updatable: true, selectable: true }"
+        @edgeClick="onEdgeClick"
+        @connect="onEdgeConnect"
+        @edgeUpdate="onEdgeUpdate"
+        @nodeClick="onNodeClick"
+    >
       <Background />
 
       <template #node-special="specialNodeProps">
-        <SpecialNode v-bind="specialNodeProps"
-                     @bookClick="addBookNode"
-                     @updateSize="updateNodeSize"
+        <SpecialNode
+            v-bind="specialNodeProps"
+            @bookClick="addBookNode"
+            @updateSize="updateNodeSize"
         />
       </template>
     </VueFlow>
   </div>
 </template>
-
-
 
 <style>
 @import '@vue-flow/core/dist/style.css';
@@ -118,5 +167,4 @@ const addBookNode = (book: { id: string; title: string; author: string; year: nu
   justify-content: center;
   align-items: center;
 }
-
 </style>

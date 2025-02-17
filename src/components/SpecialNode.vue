@@ -29,11 +29,11 @@ onMounted(async () => {
 <template>
   <div ref="nodeRef" class="vue-flow__node-default">
     <div>{{ props.data.label }}</div>
-    <ul v-if="props.data.books">
+    <ol v-if="props.data.books">
       <li v-for="book in props.data.books" :key="book.id" @click="emit('bookClick', book)">
         {{ book.title }}
       </li>
-    </ul>
+    </ol>
     <Handle type="source" position="bottom" />
   </div>
 </template>

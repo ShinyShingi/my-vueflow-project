@@ -79,7 +79,8 @@ button:focus-visible {
 }
 /* Use a purple theme for our custom node */
 .vue-flow__node-default {
-  padding: 10px;
+  padding: 20px;
+
   background: #f5b4f5;
   color: black;
   border: 1px solid #black;
@@ -88,6 +89,10 @@ button:focus-visible {
 }
 
 
-ul {
+ol {
   text-align: start;
+  padding-left: 10px;
+  li{
+    padding: 10px;
+  }
 }
