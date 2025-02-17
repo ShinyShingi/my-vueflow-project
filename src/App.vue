@@ -78,8 +78,14 @@ const addBookNode = (book: { id: string; title: string; author: string; year: nu
     target: book.id,
   };
 
+
   nodes.value.push(newNode);
   edges.value.push(newEdge);
+
+  console.log("Updated Nodes List:", JSON.parse(JSON.stringify(nodes.value)));
+  console.log("Updated Edges List:", JSON.parse(JSON.stringify(edges.value)));
+
+
 
   nodeCount.value++; // Increment for the next node
 };
@@ -93,12 +99,12 @@ const onEdgeConnect = (connection) => {
   };
 
   edges.value.push(newEdge);
-  console.log(`🔗 Edge Created: ${newEdge.id}`);
+  console.log(`Edge Created: ${newEdge.id}`);
 };
 
 // Handle when an edge is updated (moved)
 const onEdgeUpdate = ({ edge, connection }) => {
-  console.log(`✏️ Edge Updated from ${edge.source} → ${edge.target} to ${connection.source} → ${connection.target}`);
+  console.log(`Edge Updated from ${edge.source} → ${edge.target} to ${connection.source} → ${connection.target}`);
 
   edges.value = edges.value.map(e =>
       e.id === edge.id ? { ...e, source: connection.source, target: connection.target } : e
@@ -106,28 +112,63 @@ const onEdgeUpdate = ({ edge, connection }) => {
 };
 
 // Handle when an edge is clicked (manual deletion)
-const onEdgeClick = (event, edge) => {
-  console.log(`🖱️ Edge Clicked:`, edge);
+const onNodeClick = (event) => {
+  console.log("Raw Node Click Event:", event);
 
-  if (!edge || !edge.id) {
-    console.error("⚠️ Edge ID is missing! The event did not provide the correct edge data.");
+  if (!event.node || !event.node.id) {
+    console.error("Node ID is missing! The event did not provide the correct node data.");
     return;
   }
 
-  edges.value = edges.value.filter(e => e.id !== edge.id);
-  console.log(`❌ Edge Deleted Successfully: ${edge.id}`);
+  console.log(`Node Clicked: ${event.node.id}`);
 
-  // Check if any node is now disconnected
+  // Find the full node object from nodes.value
+  const fullNode = nodes.value.find(n => n.id === event.node.id);
+
+  if (!fullNode) {
+    console.error("Node not found in the list.");
+    return;
+  }
+
+  console.log("Full Node Data:", JSON.parse(JSON.stringify(fullNode)));
+};
+
+
+
+
+// Handle when a node is clicked
+const onEdgeClick = (event) => {
+  console.log("Raw Edge Click Event:", event);
+
+  if (!event.edge || !event.edge.id) {
+    console.error("Edge ID is missing! The event did not provide the correct edge data.");
+    return;
+  }
+
+  console.log(`Edge Clicked: ${event.edge.id}`);
+
+  // Find the full edge object from edges.value
+  const fullEdge = edges.value.find(e => e.id === event.edge.id);
+
+  if (!fullEdge) {
+    console.error("Edge not found in the list.");
+    return;
+  }
+
+  console.log("Full Edge Data:", JSON.parse(JSON.stringify(fullEdge)));
+
+  //  Remove the clicked edge
+  edges.value = edges.value.filter(e => e.id !== fullEdge.id);
+  console.log(`Edge Deleted Successfully: ${fullEdge.id}`);
+
+  //  Remove disconnected nodes (if they no longer have edges)
   const connectedNodes = new Set(edges.value.flatMap(e => [e.source, e.target]));
   nodes.value = nodes.value.filter(node => node.id === mainNodeId || connectedNodes.has(node.id));
 
-  console.log("🔄 Updated Nodes List:", nodes.value);
+  console.log("Updated Nodes List:", nodes.value);
 };
 
-// Handle when a node is clicked
-const onNodeClick = (event, node) => {
-  console.log(`🖱️ Node Clicked: ${node.id}`);
-};
+
 
 </script>
 
