@@ -5,6 +5,8 @@ import { VueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import SpecialNode from './components/SpecialNode.vue'
 import SpecialEdge from './components/SpecialEdge.vue'
+import TextNode from './components/TextNode.vue';
+
 
 
 const mainNodeId = '1';
@@ -168,12 +170,26 @@ const onEdgeClick = (event) => {
   console.log("Updated Nodes List:", nodes.value);
 };
 
+const addTextNode = () => {
+  const x = 500 + nodeCount.value * 160;
+  const y = 500;
 
+  const newNode = {
+    id: `t-${nodeCount.value}`,
+    type: 'text',
+    position: { x, y },
+    data: { text: "Enter text..." },
+  };
+
+  nodes.value.push(newNode);
+  nodeCount.value++;
+};
 
 </script>
 
 <template>
   <div class="container">
+    <button @click="addTextNode">➕ Add Text Node</button>
     <VueFlow
         v-model:nodes="nodes"
         v-model:edges="edges"
@@ -192,6 +208,13 @@ const onEdgeClick = (event) => {
             @updateSize="updateNodeSize"
         />
       </template>
+      <template #node-text="textNodeProps">
+        <TextNode
+            v-bind="textNodeProps"
+            @updateSize="updateNodeSize"
+            @deleteNode="deleteNode"
+        />
+      </template>
     </VueFlow>
   </div>
 </template>
@@ -207,5 +230,22 @@ const onEdgeClick = (event) => {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+button {
+  position: absolute;
+  z-index: 10000;
+  top: 20px;
+  margin-bottom: 10px;
+  padding: 5px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+}
+
+button:hover {
+  background-color: #0056b3;
 }
 </style>
